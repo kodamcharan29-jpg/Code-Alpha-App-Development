@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Language Learning App</title>
+<style>
+:root{--purple:#6556d9;--ink:#20233a;--muted:#737990;--line:#e9e8f3}*{box-sizing:border-box}
+body{margin:0;background:#f5f4fb;color:var(--ink);font-family:system-ui,Arial,sans-serif}
+header{background:linear-gradient(130deg,#5144c5,#8c7df0);color:white;padding:26px 20px 40px}
+header small{opacity:.85;font-weight:700;letter-spacing:1px}h1{font-size:27px;margin:7px 0}header p{margin:0;opacity:.9}
+main{max-width:680px;margin:-18px auto 30px;padding:0 15px}.card{background:white;border:1px solid var(--line);border-radius:19px;padding:19px;margin-bottom:14px;box-shadow:0 8px 25px #28205b0b}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.muted{color:var(--muted);font-size:13px}
+.progress{height:8px;background:#efedfa;border-radius:10px;overflow:hidden;margin-top:12px}.fill{height:100%;background:#6c5ce7;width:0}
+.word{font-size:29px;font-weight:800;margin:14px 0 2px}.translation{color:#6556d9;font-size:18px;font-weight:700}
+button{border:0;border-radius:11px;padding:12px 15px;font-weight:750;background:#6556d9;color:white;cursor:pointer}
+button.light{background:#efedff;color:#5547c4}button:disabled{opacity:.5}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}.options button{background:#f1f0fa;color:#343650;border:1px solid #e4e2f2}
+.options button.correct{background:#e3f8eb;border-color:#83d5a0;color:#176b38}.options button.wrong{background:#fff0ef;border-color:#f0a6a1;color:#a32d27}
+.full{width:100%;margin-top:14px}.tabs{display:flex;gap:8px;flex-wrap:wrap}.tabs button{padding:9px 13px}.tabs .active{background:#29254d}
+</style></head><body>
+<header><small>TASK 3 • LEARN A LITTLE EVERY DAY</small><h1>WordSteps</h1><p>Build your English vocabulary, one word at a time.</p></header>
+<main>
+<section class="card"><div class="row"><strong>My learning progress</strong><span class="muted" id="score">0 / 8 learned</span></div><div class="progress"><div class="fill" id="progress"></div></div></section>
+<section class="card"><div class="row"><strong>Daily vocabulary</strong><span class="muted" id="number">Word 1 of 8</span></div><div class="tabs"><button class="active" id="allTab">All words</button><button class="light" id="savedTab">Learned</button></div>
+<div class="word" id="word">Curious</div><div class="translation" id="meaning">Wanting to know or learn something</div><p class="muted" id="example">Example: I am curious about space.</p>
+<div class="row" style="margin-top:18px"><button class="light" id="prev">← Previous</button><button id="learn">Mark learned ✓</button><button class="light" id="next">Next →</button></div></section>
+<section class="card"><strong>Quick practice</strong><p class="muted">Choose the correct meaning of the word shown.</p><div class="word" style="font-size:22px" id="quizWord">Brave</div><div class="options" id="options"></div><p class="muted" id="feedback" aria-live="polite"></p><button class="full" id="nextQuiz">Next question</button></section>
+</main>
+<script>
+const words=[
+{w:"Curious",m:"Wanting to know or learn something",e:"I am curious about space."},
+{w:"Brave",m:"Ready to face difficulty without fear",e:"The brave student spoke on stage."},
+{w:"Improve",m:"To become or make something better",e:"Practice helps us improve."},
+{w:"Ancient",m:"Very old; from long ago",e:"We visited an ancient temple."},
+{w:"Polite",m:"Showing good manners and respect",e:"It is polite to say thank you."},
+{w:"Journey",m:"The act of travelling from one place to another",e:"Learning is a long journey."},
+{w:"Bright",m:"Full of light or intelligent",e:"She is a bright student."},
+{w:"Achieve",m:"To successfully reach a goal",e:"You can achieve your goals."}
+];
+let learned=JSON.parse(localStorage.getItem("wordsteps_learned")||"[]"),index=0,mode="all",quizIndex=1;
+const $=id=>document.getElementById(id);
+function visible(){return words.map((_,i)=>i).filter(i=>mode==="all"||learned.includes(i));}
+function render(){let list=visible();if(!list.length){$("word").textContent="No learned words yet";$("meaning").textContent="Mark words as learned in All words mode.";$("example").textContent="";$("number").textContent="0 words";$("learn").disabled=true;return}
+if(!list.includes(index))index=list[0];let item=words[index];$("word").textContent=item.w;$("meaning").textContent=item.m;$("example").textContent="Example: "+item.e;$("number").textContent=`Word ${list.indexOf(index)+1} of ${list.length}`;$("learn").disabled=learned.includes(index);$("learn").textContent=learned.includes(index)?"Learned ✓":"Mark learned ✓";$("score").textContent=`${learned.length} / ${words.length} learned`;$("progress").style.width=(learned.length/words.length*100)+"%"}
+function move(d){let list=visible();if(!list.length)return;let p=list.indexOf(index);index=list[(p+d+list.length)%list.length];render()}
+$("prev").onclick=()=>move(-1);$("next").onclick=()=>move(1);
+$("learn").onclick=()=>{if(!learned.includes(index)){learned.push(index);localStorage.setItem("wordsteps_learned",JSON.stringify(learned));render()}};
+$("allTab").onclick=()=>{mode="all";$("allTab").className="active";$("savedTab").className="light";index=0;render()};
+$("savedTab").onclick=()=>{mode="saved";$("savedTab").className="active";$("allTab").className="light";index=learned[0]??0;render()};
+function quiz(){quizIndex=(quizIndex+1)%words.length;let correct=words[quizIndex];$("quizWord").textContent=correct.w;$("feedback").textContent="";let wrong=words.filter((_,i)=>i!==quizIndex).sort(()=>Math.random()-.5).slice(0,3);let opts=[correct,...wrong].sort(()=>Math.random()-.5);$("options").innerHTML="";opts.forEach(o=>{let b=document.createElement("button");b.textContent=o.m;b.onclick=()=>{if(b.dataset.done)return;[...$("options").children].forEach(x=>x.dataset.done="1");if(o===correct){b.classList.add("correct");$("feedback").textContent="Correct! Great work."}else{b.classList.add("wrong");$("feedback").textContent="Not quite. Correct meaning: "+correct.m}};$("options").appendChild(b)})}
+$("nextQuiz").onclick=quiz;render();quiz();
+</script></body></html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flashcard Quiz App</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#172033;--muted:#667085;--brand:#5b5ce2;--line:#e5e8f0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,Arial,sans-serif}
+header{background:linear-gradient(135deg,#4546c8,#8585f4);color:white;padding:28px 20px 34px}
+header small{opacity:.85}h1{font-size:26px;margin:6px 0}main{max-width:680px;margin:-14px auto 30px;padding:0 16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 8px 25px #20264a0c}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.count{color:var(--muted);font-size:14px}
+.progress{height:7px;background:#eceeff;border-radius:9px;margin:16px 0;overflow:hidden}.bar{height:100%;background:var(--brand);width:0}
+.flash{min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;background:#f7f7ff;border:1px solid #e6e6ff;border-radius:16px}
+.tag{font-size:12px;color:var(--brand);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+#question{font-size:23px;font-weight:750;margin:18px 0}#answer{color:#344054;font-size:18px;margin:0 0 12px;display:none}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:14px;cursor:pointer;background:var(--brand);color:white}
+button.secondary{background:#ededff;color:#4142b5}button.danger{background:#fff0f0;color:#b42318}
+.controls{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.editor{margin-top:18px;border-top:1px solid var(--line);padding-top:18px}input,textarea{width:100%;padding:12px;border:1px solid #d8dce8;border-radius:10px;font:inherit;margin:6px 0 12px;background:white;color:#172033}
+label{font-size:13px;font-weight:700;color:#475467}.editor-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:420px){#question{font-size:20px}.panel{padding:15px}}
+</style></head>
+<body>
+<header><small>STUDY SMART • TASK 1</small><h1>Flashcard Quiz</h1><div>Learn one question at a time.</div></header>
+<main><section class="panel">
+<div class="top"><strong>Your study cards</strong><span class="count" id="count">Card 1 of 3</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="flash"><div class="tag">QUESTION</div><div id="question">What does HTML stand for?</div><p id="answer">HyperText Markup Language.</p></div>
+<div class="controls">
+<button class="secondary" id="prev">← Previous</button><button id="show">Show Answer</button><button class="secondary" id="next">Next →</button>
+</div>
+<div class="editor">
+<strong id="formTitle">Add a flashcard</strong>
+<label for="q">Question</label><input id="q" placeholder="Enter a question">
+<label for="a">Answer</label><textarea id="a" rows="2" placeholder="Enter the answer"></textarea>
+<div class="editor-actions"><button id="add">Add Card</button><button class="secondary" id="update" style="display:none">Save Edit</button><button class="secondary" id="edit">Edit Current</button><button class="danger" id="delete">Delete Current</button></div>
+</div></section></main>
+<script>
+const defaults=[
+{q:"What does HTML stand for?",a:"HyperText Markup Language. It gives structure to a web page."},
+{q:"What is CSS used for?",a:"CSS is used to style a web page, including colors, fonts and layout."},
+{q:"What does JavaScript do?",a:"JavaScript adds actions and interactivity to web pages."}
+];
+let cards=JSON.parse(localStorage.getItem("flashcards")||"null")||defaults;
+let index=0,editing=false;
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem("flashcards",JSON.stringify(cards))}
+function render(){if(!cards.length){$("question").textContent="No cards yet. Add your first card below."; $("answer").style.display="none";$("count").textContent="0 cards";$("bar").style.width="0";return}
+index=Math.max(0,Math.min(index,cards.length-1));$("question").textContent=cards[index].q;$("answer").textContent=cards[index].a;$("answer").style.display="none";$("show").textContent="Show Answer";$("count").textContent=`Card ${index+1} of ${cards.length}`;$("bar").style.width=((index+1)/cards.length*100)+"%"}
+$("show").onclick=()=>{$("answer").style.display=$("answer").style.display==="block"?"none":"block";$("show").textContent=$("answer").style.display==="block"?"Hide Answer":"Show Answer"};
+$("next").onclick=()=>{if(cards.length){index=(index+1)%cards.length;render()}};
+$("prev").onclick=()=>{if(cards.length){index=(index-1+cards.length)%cards.length;render()}};
+$("add").onclick=()=>{let q=$("q").value.trim(),a=$("a").value.trim();if(!q||!a){alert("Please enter both question and answer.");return}cards.push({q,a});index=cards.length-1;save();clearForm();render()};
+function clearForm(){ $("q").value="";$("a").value="";editing=false;$("formTitle").textContent="Add a flashcard";$("add").style.display="";$("update").style.display="none"}
+$("edit").onclick=()=>{if(!cards.length)return alert("Add a card first.");$("q").value=cards[index].q;$("a").value=cards[index].a;editing=true;$("formTitle").textContent="Edit current card";$("add").style.display="none";$("update").style.display=""};
+$("update").onclick=()=>{let q=$("q").value.trim(),a=$("a").value.trim();if(!q||!a)return alert("Please fill both fields.");cards[index]={q,a};save();clearForm();render()};
+$("delete").onclick=()=>{if(!cards.length)return;if(confirm("Delete this flashcard?")){cards.splice(index,1);index=Math.max(0,index-1);save();clearForm();render()}};
+render();
+</script></body></html>

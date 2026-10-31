@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Random Quote Generator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(145deg,#101b35,#273c66);font-family:system-ui,Arial,sans-serif;color:#172033;display:grid;place-items:center;padding:20px}
+.app{width:min(100%,560px);background:#fff;border-radius:24px;padding:28px;box-shadow:0 20px 60px #0005;text-align:center}
+.kicker{color:#6876a1;font-size:12px;font-weight:800;letter-spacing:2px}.mark{font-size:44px;color:#6b72df;margin:12px 0 0}
+h1{font-size:27px;margin:0 0 12px}.quote{font-size:23px;line-height:1.5;font-weight:650;margin:12px 0 22px}.author{color:#697386;font-weight:700;margin-bottom:25px}
+button{background:#6268db;color:#fff;border:0;border-radius:12px;padding:14px 20px;font-size:15px;font-weight:750;cursor:pointer;width:100%}
+.actions{display:flex;gap:10px}.actions button:last-child{background:#edf0ff;color:#4b50b5}.hint{font-size:12px;color:#98a0b1;margin-top:18px}
+</style></head><body><main class="app">
+<div class="kicker">TASK 2 • DAILY INSPIRATION</div><div class="mark">“</div><h1>Words to Inspire</h1>
+<div class="quote" id="quote">The secret of getting ahead is getting started.</div><div class="author" id="author">— Mark Twain</div>
+<div class="actions"><button id="new">New Quote</button><button id="copy">Copy</button></div><div class="hint" id="hint">Tap “New Quote” for a fresh thought.</div>
+</main><script>
+const quotes=[
+["The secret of getting ahead is getting started.","Mark Twain"],
+["It always seems impossible until it's done.","Nelson Mandela"],
+["Great things are done by a series of small things brought together.","Vincent van Gogh"],
+["Believe you can and you're halfway there.","Theodore Roosevelt"],
+["The future depends on what you do today.","Mahatma Gandhi"],
+["Well done is better than well said.","Benjamin Franklin"],
+["Learning never exhausts the mind.","Leonardo da Vinci"],
+["Success is the sum of small efforts, repeated day in and day out.","Robert Collier"],
+["You are never too old to set another goal or to dream a new dream.","C. S. Lewis"],
+["Act as if what you do makes a difference. It does.","William James"]
+];
+let previous=-1;
+function newQuote(){let n;do{n=Math.floor(Math.random()*quotes.length)}while(n===previous&&quotes.length>1);previous=n;document.getElementById("quote").textContent=quotes[n][0];document.getElementById("author").textContent="— "+quotes[n][1];document.getElementById("hint").textContent="A new thought for today."}
+document.getElementById("new").onclick=newQuote;
+document.getElementById("copy").onclick=async()=>{let t=document.getElementById("quote").textContent+" "+document.getElementById("author").textContent;try{await navigator.clipboard.writeText(t);document.getElementById("hint").textContent="Quote copied!"}catch(e){document.getElementById("hint").textContent=t}};
+newQuote();
+</script></body></html>
